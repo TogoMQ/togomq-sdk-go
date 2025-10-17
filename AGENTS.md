@@ -165,6 +165,9 @@ gofmt -s -l .
 # Install golangci-lint (if not already installed)
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
+# Verify configuration is valid
+golangci-lint config verify
+
 # Run linter (uses .golangci.yml configuration)
 golangci-lint run
 
@@ -184,6 +187,8 @@ golangci-lint run -v
 - Allows `TogoMQError` type name (even though it stutters with package name)
 - Excludes errcheck warnings in test files and examples
 
+**Important**: Always verify the configuration is valid before committing with `golangci-lint config verify`
+
 ### Pre-Commit Checklist
 
 Before committing code, ensure:
@@ -192,13 +197,16 @@ Before committing code, ensure:
 # 1. Format code
 gofmt -s -w .
 
-# 2. Run linter
+# 2. Verify linter configuration (if .golangci.yml was modified)
+golangci-lint config verify
+
+# 3. Run linter
 golangci-lint run
 
-# 3. Run tests with race detection
+# 4. Run tests with race detection
 go test -race ./...
 
-# 4. Verify no errors in all three steps above
+# 5. Verify no errors in all steps above
 ```
 
 ## Future Enhancements

@@ -1,6 +1,4 @@
 linters-settings:
-  unused:
-    check-exported: false
   revive:
     rules:
       - name: exported
