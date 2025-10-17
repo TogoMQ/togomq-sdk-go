@@ -1,0 +1,29 @@
+linters-settings:
+  unused:
+    check-exported: false
+  revive:
+    rules:
+      - name: exported
+        disabled: true  # Allow TogoMQError even though it stutters
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - goimports
+    - misspell
+    - revive
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+    - path: examples/
+      linters:
+        - errcheck
