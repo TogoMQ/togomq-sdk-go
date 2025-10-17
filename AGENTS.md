@@ -272,6 +272,153 @@ For questions about development:
   - Full test coverage
   - CI/CD pipeline
 
+## Release Process
+
+The project uses **automated releases** with conventional commits. Releases are created automatically when code is merged to the `main` branch.
+
+### Conventional Commits
+
+Use conventional commit messages to control versioning:
+
+**Commit Message Format:**
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Types and Version Bumps:**
+
+- `feat:` or `feature:` - New feature → **Minor version bump** (v1.0.0 → v1.1.0)
+- `fix:` or `bugfix:` - Bug fix → **Patch version bump** (v1.0.0 → v1.0.1)
+- `BREAKING CHANGE:` - Breaking change → **Major version bump** (v1.0.0 → v2.0.0)
+- `docs:`, `test:`, `chore:`, `style:`, `refactor:` - No version bump (unless specified)
+
+**Examples:**
+
+```bash
+# Minor version bump (new feature)
+git commit -m "feat: add retry mechanism for failed publishes"
+
+# Patch version bump (bug fix)
+git commit -m "fix: correct race condition in subscription handler"
+
+# Major version bump (breaking change)
+git commit -m "feat: redesign client API
+
+BREAKING CHANGE: removed WithQueue method, use WithTopic instead"
+
+# Multiple changes
+git commit -m "feat: add message batching
+
+- Implement batch send optimization
+- Add configurable batch size
+- Update documentation"
+
+# No version bump
+git commit -m "docs: update installation instructions"
+git commit -m "test: add integration tests"
+git commit -m "chore: update dependencies"
+```
+
+### Release Workflow
+
+1. **Develop**: Make changes in a feature branch
+2. **Commit**: Use conventional commit messages
+3. **Create PR**: Open pull request to `main`
+4. **Review & Merge**: After approval, merge to `main`
+5. **Automatic Release**: GitHub Actions automatically:
+   - Runs all tests and linters
+   - Analyzes commit messages
+   - Creates new version tag
+   - Generates changelog
+   - Creates GitHub release
+   - Comments on associated PRs
+
+### Version Guidelines
+
+Follow semantic versioning (semver):
+
+**Major (v1.0.0 → v2.0.0)**: Breaking API changes
+- Removing public methods or types
+- Changing method signatures
+- Removing configuration options
+- Changing default behavior that breaks existing code
+
+**Minor (v1.0.0 → v1.1.0)**: New features, backward compatible
+- Adding new methods or types
+- Adding new configuration options
+- Adding new functionality without breaking existing code
+
+**Patch (v1.0.0 → v1.0.1)**: Bug fixes, backward compatible
+- Fixing bugs
+- Performance improvements
+- Documentation updates
+- Internal refactoring
+
+### Pre-Release Checklist
+
+Before merging to `main`:
+
+- [ ] All tests pass locally and in CI
+- [ ] golangci-lint shows no errors
+- [ ] Code is properly formatted
+- [ ] README.md is up to date
+- [ ] Examples are tested and working
+- [ ] Commit messages follow conventional format
+- [ ] Breaking changes are clearly documented in commit message
+
+### Go Module Usage
+
+After release, users can install specific versions:
+
+```bash
+# Install specific version
+go get github.com/TogoMQ/togomq-sdk-go@v1.2.3
+
+# Install latest version
+go get github.com/TogoMQ/togomq-sdk-go@latest
+
+# List available versions
+go list -m -versions github.com/TogoMQ/togomq-sdk-go
+```
+
+### First Release
+
+To create the first release (v0.1.0), manually create and push a tag:
+
+```bash
+git tag -a v0.1.0 -m "Initial release"
+git push origin v0.1.0
+```
+
+Or create a release through GitHub UI. After the first tag exists, all subsequent releases will be automatic.
+
+### Monitoring Releases
+
+- Check the **Actions** tab in GitHub to see release workflow status
+- View **Releases** page to see published versions
+- Automated comments will be added to PRs when they're released
+
+### Troubleshooting Releases
+
+**No release created after merge:**
+- Check commit messages follow conventional format
+- Verify workflow ran successfully in Actions tab
+- Ensure commits have types that trigger version bumps (feat, fix, BREAKING CHANGE)
+
+**Wrong version number:**
+- Review commit messages for correct type prefixes
+- Check for BREAKING CHANGE footer for major bumps
+- Verify conventional commit format
+
+**Tests failed:**
+- Release is blocked if tests fail
+- Fix issues and push again
+- Workflow will retry on next push
+
 ## References
 
 - [TogoMQ Documentation](https://togomq.io/docs)
