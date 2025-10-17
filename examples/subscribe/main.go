@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/TogoMQ/togomq-sdk-go"
 )
@@ -46,7 +48,7 @@ func basicSubscribe(client *togomq.Client) {
 	// Subscribe to specific topic
 	opts := togomq.NewSubscribeOptions("orders")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	msgChan, errChan, err := client.Sub(ctx, opts)
@@ -54,14 +56,19 @@ func basicSubscribe(client *togomq.Client) {
 		log.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	log.Println("Listening for messages on topic 'orders'...")
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Println("Listening for messages on topic 'orders'... Press Ctrl+C to stop")
 
 	// Process messages
 	for {
 		select {
 		case msg, ok := <-msgChan:
 			if !ok {
-				log.Println("Subscription ended")
+				log.Println("Message channel closed, exiting...")
+				cancel()
 				return
 			}
 			log.Printf("Received message from %s: %s\n", msg.Topic, string(msg.Body))
@@ -75,12 +82,22 @@ func basicSubscribe(client *togomq.Client) {
 				}
 			}
 
-		case err := <-errChan:
-			log.Printf("Subscription error: %v\n", err)
-			return
+		case err, ok := <-errChan:
+			if !ok {
+				log.Println("Error channel closed, exiting...")
+				cancel()
+				return
+			}
+			if err != nil {
+				log.Printf("Subscription error: %v\n", err)
+				log.Println("Exiting due to error...")
+				cancel()
+				return
+			}
 
-		case <-ctx.Done():
-			log.Println("Context cancelled, ending subscription")
+		case <-sigChan:
+			log.Println("\nShutting down...")
+			cancel()
 			return
 		}
 	}
@@ -93,7 +110,7 @@ func subscribeAllTopics(client *togomq.Client) {
 	// Subscribe to all topics using "*" wildcard
 	opts := togomq.NewSubscribeOptions("*")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	msgChan, errChan, err := client.Sub(ctx, opts)
@@ -101,24 +118,39 @@ func subscribeAllTopics(client *togomq.Client) {
 		log.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	log.Println("Listening for messages from ALL topics...")
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Println("Listening for messages from ALL topics... Press Ctrl+C to stop")
 
 	// Process messages
 	for {
 		select {
 		case msg, ok := <-msgChan:
 			if !ok {
-				log.Println("Subscription ended")
+				log.Println("Message channel closed, exiting...")
+				cancel()
 				return
 			}
 			log.Printf("Received message from topic '%s': %s\n", msg.Topic, string(msg.Body))
 
-		case err := <-errChan:
-			log.Printf("Subscription error: %v\n", err)
-			return
+		case err, ok := <-errChan:
+			if !ok {
+				log.Println("Error channel closed, exiting...")
+				cancel()
+				return
+			}
+			if err != nil {
+				log.Printf("Subscription error: %v\n", err)
+				log.Println("Exiting due to error...")
+				cancel()
+				return
+			}
 
-		case <-ctx.Done():
-			log.Println("Context cancelled, ending subscription")
+		case <-sigChan:
+			log.Println("\nShutting down...")
+			cancel()
 			return
 		}
 	}
@@ -131,7 +163,7 @@ func subscribeWithPattern(client *togomq.Client) {
 	// Subscribe to all orders topics (orders.new, orders.updated, etc.)
 	opts := togomq.NewSubscribeOptions("orders.*")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	msgChan, errChan, err := client.Sub(ctx, opts)
@@ -139,24 +171,39 @@ func subscribeWithPattern(client *togomq.Client) {
 		log.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	log.Println("Listening for messages matching pattern 'orders.*'...")
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Println("Listening for messages matching pattern 'orders.*'... Press Ctrl+C to stop")
 
 	// Process messages
 	for {
 		select {
 		case msg, ok := <-msgChan:
 			if !ok {
-				log.Println("Subscription ended")
+				log.Println("Message channel closed, exiting...")
+				cancel()
 				return
 			}
 			log.Printf("Received message from %s: %s\n", msg.Topic, string(msg.Body))
 
-		case err := <-errChan:
-			log.Printf("Subscription error: %v\n", err)
-			return
+		case err, ok := <-errChan:
+			if !ok {
+				log.Println("Error channel closed, exiting...")
+				cancel()
+				return
+			}
+			if err != nil {
+				log.Printf("Subscription error: %v\n", err)
+				log.Println("Exiting due to error...")
+				cancel()
+				return
+			}
 
-		case <-ctx.Done():
-			log.Println("Context cancelled, ending subscription")
+		case <-sigChan:
+			log.Println("\nShutting down...")
+			cancel()
 			return
 		}
 	}
@@ -171,7 +218,7 @@ func advancedSubscribe(client *togomq.Client) {
 		WithBatch(10).       // Receive up to 10 messages at once
 		WithSpeedPerSec(100) // Limit to 100 messages per second
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	msgChan, errChan, err := client.Sub(ctx, opts)
@@ -179,7 +226,11 @@ func advancedSubscribe(client *togomq.Client) {
 		log.Fatalf("Failed to subscribe: %v", err)
 	}
 
-	log.Println("Listening for messages with batch=10, speed=100/sec...")
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	log.Println("Listening for messages with batch=10, speed=100/sec... Press Ctrl+C to stop")
 
 	messageCount := 0
 
@@ -188,19 +239,29 @@ func advancedSubscribe(client *togomq.Client) {
 		select {
 		case msg, ok := <-msgChan:
 			if !ok {
-				log.Printf("Subscription ended. Total messages received: %d\n", messageCount)
+				log.Printf("Message channel closed, exiting... Total messages received: %d\n", messageCount)
+				cancel()
 				return
 			}
 			messageCount++
 			log.Printf("[%d] Received: %s from %s\n", messageCount, string(msg.Body), msg.Topic)
 
-		case err := <-errChan:
-			log.Printf("Subscription error: %v\n", err)
-			log.Printf("Messages received before error: %d\n", messageCount)
-			return
+		case err, ok := <-errChan:
+			if !ok {
+				log.Printf("Error channel closed, exiting... Messages received: %d\n", messageCount)
+				cancel()
+				return
+			}
+			if err != nil {
+				log.Printf("Subscription error: %v\n", err)
+				log.Printf("Exiting due to error... Messages received before error: %d\n", messageCount)
+				cancel()
+				return
+			}
 
-		case <-ctx.Done():
-			log.Printf("Context cancelled. Total messages received: %d\n", messageCount)
+		case <-sigChan:
+			log.Printf("\nShutting down... Total messages received: %d\n", messageCount)
+			cancel()
 			return
 		}
 	}
