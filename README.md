@@ -215,6 +215,7 @@ func main() {
 
 ```go
 // Subscribe with batch size and rate limiting
+// Default values: Batch = 0 (server default of 1000), SpeedPerSec = 0 (unlimited)
 opts := togomq.NewSubscribeOptions("orders.*").  // Wildcard topic
     WithBatch(10).                                // Receive up to 10 messages at once
     WithSpeedPerSec(100)                          // Limit to 100 messages per second
@@ -224,6 +225,10 @@ if err != nil {
     log.Fatal(err)
 }
 ```
+
+**Subscription Options:**
+- **Batch**: Maximum number of messages to receive at once (default: 0 = server default of 1000)
+- **SpeedPerSec**: Rate limit for message delivery per second (default: 0 = unlimited)
 
 #### Subscribe to All Topics (Wildcard)
 

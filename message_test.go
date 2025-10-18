@@ -51,11 +51,11 @@ func TestNewSubscribeOptions(t *testing.T) {
 	if opts.Topic != topic {
 		t.Errorf("Expected topic '%s', got '%s'", topic, opts.Topic)
 	}
-	if opts.Batch != 1 {
-		t.Errorf("Expected batch 1, got %d", opts.Batch)
+	if opts.Batch != 0 {
+		t.Errorf("Expected batch 0 (server default of 1000), got %d", opts.Batch)
 	}
 	if opts.SpeedPerSec != 0 {
-		t.Errorf("Expected speed 0, got %d", opts.SpeedPerSec)
+		t.Errorf("Expected speed 0 (unlimited), got %d", opts.SpeedPerSec)
 	}
 }
 
