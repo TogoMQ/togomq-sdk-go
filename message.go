@@ -72,7 +72,7 @@ func fromSubResponse(resp *mqv1.SubMessageResponse) *Message {
 type SubscribeOptions struct {
 	// Topic is the topic to subscribe to (required, supports wildcards like "orders.*" or "*" for all topics)
 	Topic string
-	// Batch is the maximum number of messages to receive at once (0 = server default of 1000)
+	// Batch is the maximum number of messages to receive at once (0 = default 1000 if not set)
 	Batch int64
 	// SpeedPerSec limits the rate of message delivery per second (0 = unlimited)
 	SpeedPerSec int64
@@ -82,7 +82,7 @@ type SubscribeOptions struct {
 func NewSubscribeOptions(topic string) *SubscribeOptions {
 	return &SubscribeOptions{
 		Topic:       topic,
-		Batch:       0, // server default (1000)
+		Batch:       0, // default 1000 if not set
 		SpeedPerSec: 0, // unlimited
 	}
 }

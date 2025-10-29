@@ -214,6 +214,7 @@ func advancedSubscribe(client *togomq.Client) {
 	fmt.Println("=== Advanced Subscription with Options ===")
 
 	// Subscribe with batch size and rate limiting
+	// Default values: Batch = 0 (default 1000 if not set), SpeedPerSec = 0 (unlimited)
 	opts := togomq.NewSubscribeOptions("events").
 		WithBatch(10).       // Receive up to 10 messages at once
 		WithSpeedPerSec(100) // Limit to 100 messages per second

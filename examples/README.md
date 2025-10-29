@@ -59,7 +59,7 @@ go run main.go
 **Features demonstrated:**
 - Topic-specific subscriptions
 - Wildcard and pattern matching
-- Message batching
+- Message batching (default: 1000 if not set)
 - Rate limiting with `WithSpeedPerSec()`
 - Context cancellation and timeouts
 - Accessing message UUID and variables
