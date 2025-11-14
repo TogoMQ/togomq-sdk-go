@@ -19,6 +19,23 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.Token != "" {
 		t.Errorf("Expected default token to be empty, got '%s'", cfg.Token)
 	}
+	// Check gRPC settings
+	expectedMaxMsgSize := 52428800 // 50MB
+	if cfg.MaxMessageSize != expectedMaxMsgSize {
+		t.Errorf("Expected default max message size to be %d, got %d", expectedMaxMsgSize, cfg.MaxMessageSize)
+	}
+	if cfg.InitialWindowSize != int32(expectedMaxMsgSize) {
+		t.Errorf("Expected default initial window size to be %d, got %d", expectedMaxMsgSize, cfg.InitialWindowSize)
+	}
+	if cfg.InitialConnWindowSize != int32(expectedMaxMsgSize) {
+		t.Errorf("Expected default initial conn window size to be %d, got %d", expectedMaxMsgSize, cfg.InitialConnWindowSize)
+	}
+	if cfg.WriteBufferSize != 256*1024 {
+		t.Errorf("Expected default write buffer size to be 262144, got %d", cfg.WriteBufferSize)
+	}
+	if cfg.ReadBufferSize != 256*1024 {
+		t.Errorf("Expected default read buffer size to be 262144, got %d", cfg.ReadBufferSize)
+	}
 }
 
 func TestConfigValidation(t *testing.T) {
@@ -29,13 +46,8 @@ func TestConfigValidation(t *testing.T) {
 		errorMsg    string
 	}{
 		{
-			name: "valid config",
-			config: &Config{
-				Host:     "test.example.com",
-				Port:     5123,
-				LogLevel: "info",
-				Token:    "mytoken",
-			},
+			name:        "valid config",
+			config:      NewConfig(WithToken("mytoken")),
 			expectError: false,
 		},
 		{
@@ -78,6 +90,71 @@ func TestConfigValidation(t *testing.T) {
 			expectError: true,
 			errorMsg:    "token is required",
 		},
+		{
+			name: "invalid max message size",
+			config: &Config{
+				Host:           "test.example.com",
+				Port:           5123,
+				Token:          "mytoken",
+				MaxMessageSize: 0,
+			},
+			expectError: true,
+			errorMsg:    "max message size must be greater than 0",
+		},
+		{
+			name: "invalid initial window size",
+			config: &Config{
+				Host:              "test.example.com",
+				Port:              5123,
+				Token:             "mytoken",
+				MaxMessageSize:    1024,
+				InitialWindowSize: 0,
+			},
+			expectError: true,
+			errorMsg:    "initial window size must be greater than 0",
+		},
+		{
+			name: "invalid initial conn window size",
+			config: &Config{
+				Host:                  "test.example.com",
+				Port:                  5123,
+				Token:                 "mytoken",
+				MaxMessageSize:        1024,
+				InitialWindowSize:     1024,
+				InitialConnWindowSize: 0,
+			},
+			expectError: true,
+			errorMsg:    "initial connection window size must be greater than 0",
+		},
+		{
+			name: "invalid write buffer size",
+			config: &Config{
+				Host:                  "test.example.com",
+				Port:                  5123,
+				Token:                 "mytoken",
+				MaxMessageSize:        1024,
+				InitialWindowSize:     1024,
+				InitialConnWindowSize: 1024,
+				WriteBufferSize:       0,
+			},
+			expectError: true,
+			errorMsg:    "write buffer size must be greater than 0",
+		},
+		{
+			name: "invalid read buffer size",
+			config: &Config{
+				Host:                  "test.example.com",
+				Port:                  5123,
+				Token:                 "mytoken",
+				MaxMessageSize:        1024,
+				InitialWindowSize:     1024,
+				InitialConnWindowSize: 1024,
+				WriteBufferSize:       1024,
+				ReadBufferSize:        0,
+			},
+			expectError: true,
+			errorMsg:    "read buffer size must be greater than 0",
+		},
 	}
 
 	for _, tt := range tests {
@@ -116,6 +193,9 @@ func TestConfigOptions(t *testing.T) {
 		WithPort(9000),
 		WithLogLevel("debug"),
 		WithToken("custom-token"),
+		WithMaxMessageSize(10485760), // 10MB
+		WithWriteBufferSize(512*1024),
+		WithReadBufferSize(512*1024),
 	)
 
 	if cfg.Host != "custom.example.com" {
@@ -129,6 +209,37 @@ func TestConfigOptions(t *testing.T) {
 	}
 	if cfg.Token != "custom-token" {
 		t.Errorf("Expected token 'custom-token', got '%s'", cfg.Token)
+	}
+	if cfg.MaxMessageSize != 10485760 {
+		t.Errorf("Expected max message size 10485760, got %d", cfg.MaxMessageSize)
+	}
+	// WithMaxMessageSize should also set window sizes
+	if cfg.InitialWindowSize != 10485760 {
+		t.Errorf("Expected initial window size 10485760, got %d", cfg.InitialWindowSize)
+	}
+	if cfg.InitialConnWindowSize != 10485760 {
+		t.Errorf("Expected initial conn window size 10485760, got %d", cfg.InitialConnWindowSize)
+	}
+	if cfg.WriteBufferSize != 512*1024 {
+		t.Errorf("Expected write buffer size 524288, got %d", cfg.WriteBufferSize)
+	}
+	if cfg.ReadBufferSize != 512*1024 {
+		t.Errorf("Expected read buffer size 524288, got %d", cfg.ReadBufferSize)
+	}
+}
+
+func TestWindowSizeOptions(t *testing.T) {
+	cfg := NewConfig(
+		WithToken("test-token"),
+		WithInitialWindowSize(1024),
+		WithInitialConnWindowSize(2048),
+	)
+
+	if cfg.InitialWindowSize != 1024 {
+		t.Errorf("Expected initial window size 1024, got %d", cfg.InitialWindowSize)
+	}
+	if cfg.InitialConnWindowSize != 2048 {
+		t.Errorf("Expected initial conn window size 2048, got %d", cfg.InitialConnWindowSize)
 	}
 }
 

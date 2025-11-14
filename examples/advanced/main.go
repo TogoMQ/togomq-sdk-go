@@ -183,12 +183,18 @@ func handleError(err error, operation string) {
 func customConfigExample() {
 	fmt.Println("=== Custom Configuration Example ===")
 
-	// Example with custom host and port
+	// Example with custom host, port, and gRPC settings
 	config := togomq.NewConfig(
 		togomq.WithHost("custom.togomq.io"),
 		togomq.WithPort(9000),
 		togomq.WithLogLevel("debug"),
 		togomq.WithToken("your-custom-token"),
+		// Configure for large messages and high performance
+		togomq.WithMaxMessageSize(52428800),      // 50MB max message size
+		togomq.WithWriteBufferSize(512*1024),     // 512KB write buffer
+		togomq.WithReadBufferSize(512*1024),      // 512KB read buffer
+		togomq.WithInitialWindowSize(52428800),   // 50MB initial window
+		togomq.WithInitialConnWindowSize(52428800), // 50MB connection window
 	)
 
 	client, err := togomq.NewClient(config)
