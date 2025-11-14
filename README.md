@@ -59,6 +59,11 @@ defer client.Close()
 | `Port` | `5123` | TogoMQ server port |
 | `LogLevel` | `info` | Logging level (debug, info, warn, error, none) |
 | `Token` | *(required)* | Authentication token |
+| `MaxMessageSize` | `52428800` (50MB) | Maximum message size in bytes for send/receive |
+| `InitialWindowSize` | `52428800` (50MB) | Initial window size for flow control |
+| `InitialConnWindowSize` | `52428800` (50MB) | Initial connection window size |
+| `WriteBufferSize` | `262144` (256KB) | Write buffer size in bytes |
+| `ReadBufferSize` | `262144` (256KB) | Read buffer size in bytes |
 
 ### Custom Configuration
 
@@ -68,8 +73,34 @@ config := togomq.NewConfig(
     togomq.WithPort(9000),
     togomq.WithLogLevel("debug"),
     togomq.WithToken("your-token-here"),
+    // Optional: Configure for large messages and high performance
+    togomq.WithMaxMessageSize(52428800),      // 50MB (default)
+    togomq.WithWriteBufferSize(512*1024),     // 512KB write buffer
+    togomq.WithReadBufferSize(512*1024),      // 512KB read buffer
 )
 ```
+
+### Large Message Support
+
+For applications that need to send large messages (up to 50MB), the SDK comes pre-configured with appropriate defaults. The gRPC settings are optimized for streaming large batches of messages:
+
+```go
+// Default configuration already supports large messages
+config := togomq.NewConfig(togomq.WithToken("your-token"))
+
+// Or customize for even larger messages
+config := togomq.NewConfig(
+    togomq.WithToken("your-token"),
+    togomq.WithMaxMessageSize(104857600), // 100MB
+    togomq.WithInitialWindowSize(104857600),
+    togomq.WithInitialConnWindowSize(104857600),
+)
+```
+
+The default settings support:
+- Messages up to 50MB in size
+- Efficient streaming of large message batches
+- Optimized buffer sizes for high throughput
 
 ## Usage
 

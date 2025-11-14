@@ -34,10 +34,18 @@ func NewClient(config *Config) (*Client, error) {
 	// Create TLS credentials
 	creds := credentials.NewTLS(nil)
 
-	// Create gRPC connection
+	// Create gRPC connection with performance and large message support settings
 	conn, err := grpc.NewClient(
 		config.Address(),
 		grpc.WithTransportCredentials(creds),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(config.MaxMessageSize),
+			grpc.MaxCallSendMsgSize(config.MaxMessageSize),
+		),
+		grpc.WithInitialWindowSize(config.InitialWindowSize),
+		grpc.WithInitialConnWindowSize(config.InitialConnWindowSize),
+		grpc.WithWriteBufferSize(config.WriteBufferSize),
+		grpc.WithReadBufferSize(config.ReadBufferSize),
 	)
 	if err != nil {
 		logger.Error("Failed to connect to TogoMQ: %v", err)
