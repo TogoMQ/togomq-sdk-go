@@ -190,10 +190,10 @@ func customConfigExample() {
 		togomq.WithLogLevel("debug"),
 		togomq.WithToken("your-custom-token"),
 		// Configure for large messages and high performance
-		togomq.WithMaxMessageSize(52428800),      // 50MB max message size
-		togomq.WithWriteBufferSize(512*1024),     // 512KB write buffer
-		togomq.WithReadBufferSize(512*1024),      // 512KB read buffer
-		togomq.WithInitialWindowSize(52428800),   // 50MB initial window
+		togomq.WithMaxMessageSize(52428800),        // 50MB max message size
+		togomq.WithWriteBufferSize(512*1024),       // 512KB write buffer
+		togomq.WithReadBufferSize(512*1024),        // 512KB read buffer
+		togomq.WithInitialWindowSize(52428800),     // 50MB initial window
 		togomq.WithInitialConnWindowSize(52428800), // 50MB connection window
 	)
 
