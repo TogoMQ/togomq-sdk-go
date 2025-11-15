@@ -312,6 +312,79 @@ for {
 }
 ```
 
+### Counting Messages
+
+Count messages in topics using exact names or wildcard patterns.
+
+#### Count Messages in Specific Topic
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    
+    "github.com/TogoMQ/togomq-sdk-go"
+)
+
+func main() {
+    // Create client
+    config := togomq.NewConfig(togomq.WithToken("your-token"))
+    client, err := togomq.NewClient(config)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer client.Close()
+    
+    ctx := context.Background()
+    
+    // Count messages in specific topic
+    count, err := client.CountMessages(ctx, "orders")
+    if err != nil {
+        log.Fatal(err)
+    }
+    log.Printf("Messages in 'orders' topic: %d\n", count)
+}
+```
+
+#### Count Messages with Wildcards
+
+```go
+// Count messages in all topics matching pattern
+count, err := client.CountMessages(ctx, "orders.*")
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("Messages in 'orders.*' topics: %d\n", count)
+
+// Count all messages across all topics
+count, err = client.CountMessages(ctx, "*")
+if err != nil {
+    log.Fatal(err)
+}
+log.Printf("Total messages: %d\n", count)
+```
+
+#### Count Messages in Multiple Topics
+
+```go
+topics := []string{"orders", "events", "notifications", "logs.*"}
+for _, topic := range topics {
+    count, err := client.CountMessages(ctx, topic)
+    if err != nil {
+        log.Printf("Failed to count messages for topic '%s': %v", topic, err)
+        continue
+    }
+    log.Printf("Topic %s: %d messages\n", topic, count)
+}
+```
+
+**Wildcard Support:**
+- Exact match: `"orders"` - counts messages in the orders topic only
+- Pattern match: `"orders.*"` - counts messages in orders.new, orders.updated, etc.
+- All topics: `"*"` - counts all messages across all topics
+
 ## Message Structure
 
 ### Publishing Message
@@ -405,6 +478,7 @@ Check out the `examples/` directory for complete working examples:
 
 - `examples/publish/` - Publishing examples
 - `examples/subscribe/` - Subscription examples
+- `examples/countmessages/` - Counting messages examples
 - `examples/advanced/` - Advanced usage patterns
 
 ## Contributing

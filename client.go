@@ -209,3 +209,34 @@ func (c *Client) Sub(ctx context.Context, opts *SubscribeOptions) (<-chan *Messa
 
 	return messageChan, errorChan, nil
 }
+
+// CountMessages counts the number of messages in a topic.
+// Topic can use wildcards (e.g., "orders.*" or "*" for all topics).
+// Returns the total count of messages matching the topic pattern.
+func (c *Client) CountMessages(ctx context.Context, topic string) (int64, error) {
+	// Validate that topic is specified
+	if topic == "" {
+		return 0, NewError(ErrCodeValidation, "topic is required for counting messages", nil)
+	}
+
+	c.logger.Debug("Counting messages for topic: %s", topic)
+
+	// Add authentication to context
+	ctx = c.contextWithAuth(ctx)
+
+	// Create the request
+	req := &mqv1.CountMessagesRequest{
+		Topic: topic,
+	}
+
+	// Call the gRPC method
+	resp, err := c.client.CountMessages(ctx, req)
+	if err != nil {
+		c.logger.Error("Failed to count messages: %v", err)
+		return 0, WrapGRPCError(err, "failed to count messages")
+	}
+
+	c.logger.Info("Counted %d messages for topic: %s", resp.MessagesCount, topic)
+
+	return resp.MessagesCount, nil
+}
