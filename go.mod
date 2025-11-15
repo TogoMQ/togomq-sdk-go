@@ -3,7 +3,7 @@ module github.com/TogoMQ/togomq-sdk-go
 go 1.24.0
 
 require (
-	github.com/TogoMQ/togomq-grpc-go v0.0.0-20250925084444-87009e5f6aeb
+	github.com/TogoMQ/togomq-grpc-go v0.0.0-20251106172130-c0eb30324b29
 	google.golang.org/grpc v1.75.1
 )
 
