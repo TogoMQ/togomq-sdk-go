@@ -7,6 +7,7 @@ import (
 	mqv1 "github.com/TogoMQ/togomq-grpc-go/mq/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -46,6 +47,11 @@ func NewClient(config *Config) (*Client, error) {
 		grpc.WithInitialConnWindowSize(config.InitialConnWindowSize),
 		grpc.WithWriteBufferSize(config.WriteBufferSize),
 		grpc.WithReadBufferSize(config.ReadBufferSize),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                config.KeepaliveTime,
+			Timeout:             config.KeepaliveTimeout,
+			PermitWithoutStream: false,
+		}),
 	)
 	if err != nil {
 		logger.Error("Failed to connect to TogoMQ: %v", err)
