@@ -1,6 +1,6 @@
 module github.com/TogoMQ/togomq-sdk-go
 
-go 1.24.0
+go 1.23.12
 
 require (
 	github.com/TogoMQ/togomq-grpc-go v0.0.0-20251106172130-c0eb30324b29
