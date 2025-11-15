@@ -3,6 +3,7 @@ package togomq
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Config holds the configuration for the TogoMQ client
@@ -17,14 +18,18 @@ type Config struct {
 	Token string
 	// MaxMessageSize is the maximum message size in bytes for both send and receive (default: 50MB)
 	MaxMessageSize int
-	// InitialWindowSize is the initial window size for flow control (default: same as MaxMessageSize)
+	// InitialWindowSize is the initial window size for flow control (default: 128MB)
 	InitialWindowSize int32
-	// InitialConnWindowSize is the initial connection window size (default: same as MaxMessageSize)
+	// InitialConnWindowSize is the initial connection window size (default: 128MB)
 	InitialConnWindowSize int32
-	// WriteBufferSize is the write buffer size in bytes (default: 256KB)
+	// WriteBufferSize is the write buffer size in bytes (default: 2MB)
 	WriteBufferSize int
-	// ReadBufferSize is the read buffer size in bytes (default: 256KB)
+	// ReadBufferSize is the read buffer size in bytes (default: 2MB)
 	ReadBufferSize int
+	// KeepaliveTime is the duration after which a keepalive ping is sent (default: 60s)
+	KeepaliveTime time.Duration
+	// KeepaliveTimeout is the duration to wait for keepalive ping response (default: 20s)
+	KeepaliveTimeout time.Duration
 }
 
 // DefaultConfig returns a Config with default values
@@ -36,10 +41,12 @@ func DefaultConfig() *Config {
 		LogLevel:              "info",
 		Token:                 "",
 		MaxMessageSize:        defaultMaxMessageSize,
-		InitialWindowSize:     int32(defaultMaxMessageSize),
-		InitialConnWindowSize: int32(defaultMaxMessageSize),
-		WriteBufferSize:       256 * 1024, // 256KB
-		ReadBufferSize:        256 * 1024, // 256KB
+		InitialWindowSize:     128 * 1024 * 1024, // 128MB
+		InitialConnWindowSize: 128 * 1024 * 1024, // 128MB
+		WriteBufferSize:       2 * 1024 * 1024,   // 2MB
+		ReadBufferSize:        2 * 1024 * 1024,   // 2MB
+		KeepaliveTime:         60 * time.Second,  // 60s
+		KeepaliveTimeout:      20 * time.Second,  // 20s
 	}
 }
 
@@ -68,6 +75,12 @@ func (c *Config) Validate() error {
 	}
 	if c.ReadBufferSize <= 0 {
 		return fmt.Errorf("read buffer size must be greater than 0")
+	}
+	if c.KeepaliveTime <= 0 {
+		return fmt.Errorf("keepalive time must be greater than 0")
+	}
+	if c.KeepaliveTimeout <= 0 {
+		return fmt.Errorf("keepalive timeout must be greater than 0")
 	}
 	return nil
 }
@@ -143,6 +156,20 @@ func WithWriteBufferSize(size int) ConfigOption {
 func WithReadBufferSize(size int) ConfigOption {
 	return func(c *Config) {
 		c.ReadBufferSize = size
+	}
+}
+
+// WithKeepaliveTime sets the keepalive time duration
+func WithKeepaliveTime(duration time.Duration) ConfigOption {
+	return func(c *Config) {
+		c.KeepaliveTime = duration
+	}
+}
+
+// WithKeepaliveTimeout sets the keepalive timeout duration
+func WithKeepaliveTimeout(duration time.Duration) ConfigOption {
+	return func(c *Config) {
+		c.KeepaliveTimeout = duration
 	}
 }
 

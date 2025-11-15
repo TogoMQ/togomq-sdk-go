@@ -2,6 +2,7 @@ package togomq
 
 import (
 	"testing"
+	"time"
 )
 
 func TestDefaultConfig(t *testing.T) {
@@ -24,17 +25,26 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.MaxMessageSize != expectedMaxMsgSize {
 		t.Errorf("Expected default max message size to be %d, got %d", expectedMaxMsgSize, cfg.MaxMessageSize)
 	}
-	if cfg.InitialWindowSize != int32(expectedMaxMsgSize) {
-		t.Errorf("Expected default initial window size to be %d, got %d", expectedMaxMsgSize, cfg.InitialWindowSize)
+	expectedWindowSize := int32(128 * 1024 * 1024) // 128MB
+	if cfg.InitialWindowSize != expectedWindowSize {
+		t.Errorf("Expected default initial window size to be %d, got %d", expectedWindowSize, cfg.InitialWindowSize)
 	}
-	if cfg.InitialConnWindowSize != int32(expectedMaxMsgSize) {
-		t.Errorf("Expected default initial conn window size to be %d, got %d", expectedMaxMsgSize, cfg.InitialConnWindowSize)
+	if cfg.InitialConnWindowSize != expectedWindowSize {
+		t.Errorf("Expected default initial conn window size to be %d, got %d", expectedWindowSize, cfg.InitialConnWindowSize)
 	}
-	if cfg.WriteBufferSize != 256*1024 {
-		t.Errorf("Expected default write buffer size to be 262144, got %d", cfg.WriteBufferSize)
+	expectedBufferSize := 2 * 1024 * 1024 // 2MB
+	if cfg.WriteBufferSize != expectedBufferSize {
+		t.Errorf("Expected default write buffer size to be %d, got %d", expectedBufferSize, cfg.WriteBufferSize)
 	}
-	if cfg.ReadBufferSize != 256*1024 {
-		t.Errorf("Expected default read buffer size to be 262144, got %d", cfg.ReadBufferSize)
+	if cfg.ReadBufferSize != expectedBufferSize {
+		t.Errorf("Expected default read buffer size to be %d, got %d", expectedBufferSize, cfg.ReadBufferSize)
+	}
+	// Check keepalive settings
+	if cfg.KeepaliveTime != 60*time.Second {
+		t.Errorf("Expected default keepalive time to be 60s, got %v", cfg.KeepaliveTime)
+	}
+	if cfg.KeepaliveTimeout != 20*time.Second {
+		t.Errorf("Expected default keepalive timeout to be 20s, got %v", cfg.KeepaliveTimeout)
 	}
 }
 
@@ -155,6 +165,40 @@ func TestConfigValidation(t *testing.T) {
 			expectError: true,
 			errorMsg:    "read buffer size must be greater than 0",
 		},
+		{
+			name: "invalid keepalive time",
+			config: &Config{
+				Host:                  "test.example.com",
+				Port:                  5123,
+				Token:                 "mytoken",
+				MaxMessageSize:        1024,
+				InitialWindowSize:     1024,
+				InitialConnWindowSize: 1024,
+				WriteBufferSize:       1024,
+				ReadBufferSize:        1024,
+				KeepaliveTime:         0,
+				KeepaliveTimeout:      20 * time.Second,
+			},
+			expectError: true,
+			errorMsg:    "keepalive time must be greater than 0",
+		},
+		{
+			name: "invalid keepalive timeout",
+			config: &Config{
+				Host:                  "test.example.com",
+				Port:                  5123,
+				Token:                 "mytoken",
+				MaxMessageSize:        1024,
+				InitialWindowSize:     1024,
+				InitialConnWindowSize: 1024,
+				WriteBufferSize:       1024,
+				ReadBufferSize:        1024,
+				KeepaliveTime:         60 * time.Second,
+				KeepaliveTimeout:      0,
+			},
+			expectError: true,
+			errorMsg:    "keepalive timeout must be greater than 0",
+		},
 	}
 
 	for _, tt := range tests {
@@ -240,6 +284,21 @@ func TestWindowSizeOptions(t *testing.T) {
 	}
 	if cfg.InitialConnWindowSize != 2048 {
 		t.Errorf("Expected initial conn window size 2048, got %d", cfg.InitialConnWindowSize)
+	}
+}
+
+func TestKeepaliveOptions(t *testing.T) {
+	cfg := NewConfig(
+		WithToken("test-token"),
+		WithKeepaliveTime(30*time.Second),
+		WithKeepaliveTimeout(10*time.Second),
+	)
+
+	if cfg.KeepaliveTime != 30*time.Second {
+		t.Errorf("Expected keepalive time 30s, got %v", cfg.KeepaliveTime)
+	}
+	if cfg.KeepaliveTimeout != 10*time.Second {
+		t.Errorf("Expected keepalive timeout 10s, got %v", cfg.KeepaliveTimeout)
 	}
 }
 
