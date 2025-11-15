@@ -1,5 +1,5 @@
-github.com/TogoMQ/togomq-grpc-go v0.0.0-20250925084444-87009e5f6aeb h1:U9XoPg2qiMp+sEjY5AevVVHNUFULXMWyUhayZ1sgaq8=
-github.com/TogoMQ/togomq-grpc-go v0.0.0-20250925084444-87009e5f6aeb/go.mod h1:vl1ovcjSQ8RLTqlmn2JvSZCtHdIhHW5gkrZkjkWJMiU=
+github.com/TogoMQ/togomq-grpc-go v0.0.0-20251106172130-c0eb30324b29 h1:4Y1SsiS2MLgJo5631sKKs9R2+1CYEDYEChUhJXfaf0s=
+github.com/TogoMQ/togomq-grpc-go v0.0.0-20251106172130-c0eb30324b29/go.mod h1:vl1ovcjSQ8RLTqlmn2JvSZCtHdIhHW5gkrZkjkWJMiU=
 github.com/go-logr/logr v1.4.3 h1:CjnDlHq8ikf6E492q6eKboGOC0T8CDaOvkHCIg8idEI=
 github.com/go-logr/logr v1.4.3/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=

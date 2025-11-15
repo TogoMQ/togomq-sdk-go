@@ -34,6 +34,16 @@ This is the official Go SDK for TogoMQ, a modern message queue service. The SDK 
    - gRPC error wrapping and translation
    - User-friendly error messages
 
+### Public API Methods
+
+The Client exposes the following public methods:
+
+- **Pub** - Publishes messages via streaming channel
+- **PubBatch** - Publishes a batch of messages at once
+- **Sub** - Subscribes to messages from topics (supports wildcards)
+- **CountMessages** - Counts messages in a topic (supports wildcards)
+- **Close** - Closes the client connection
+
 ### Dependencies
 
 - **github.com/TogoMQ/togomq-grpc-go** - Auto-generated gRPC protobuf definitions
@@ -239,7 +249,6 @@ go test -race ./...
    - Benchmark suite
 
 6. **Additional Methods**
-   - CountMessages (already in gRPC API)
    - HealthCheck (already in gRPC API)
    - Message acknowledgement
    - Batch operations
