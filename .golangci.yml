@@ -1,9 +1,3 @@
-linters-settings:
-  revive:
-    rules:
-      - name: exported
-        disabled: true  # Allow TogoMQError even though it stutters
-
 linters:
   enable:
     - gofmt
@@ -16,6 +10,12 @@ linters:
     - goimports
     - misspell
     - revive
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        disabled: true
 
 issues:
   exclude-rules:
