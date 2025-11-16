@@ -189,6 +189,7 @@ func customConfigExample() {
 		togomq.WithPort(9000),
 		togomq.WithLogLevel("debug"),
 		togomq.WithToken("your-custom-token"),
+		togomq.WithUseTLS(false), // Disable TLS if connecting to local development server
 		// Configure for large messages and high performance
 		togomq.WithMaxMessageSize(52428800),        // 50MB max message size
 		togomq.WithWriteBufferSize(512*1024),       // 512KB write buffer

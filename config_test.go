@@ -20,6 +20,9 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.Token != "" {
 		t.Errorf("Expected default token to be empty, got '%s'", cfg.Token)
 	}
+	if cfg.UseTLS != true {
+		t.Errorf("Expected default UseTLS to be true, got %v", cfg.UseTLS)
+	}
 	// Check gRPC settings
 	expectedMaxMsgSize := 52428800 // 50MB
 	if cfg.MaxMessageSize != expectedMaxMsgSize {
@@ -299,6 +302,26 @@ func TestKeepaliveOptions(t *testing.T) {
 	}
 	if cfg.KeepaliveTimeout != 10*time.Second {
 		t.Errorf("Expected keepalive timeout 10s, got %v", cfg.KeepaliveTimeout)
+	}
+}
+
+func TestUseTLSOption(t *testing.T) {
+	// Test default (TLS enabled)
+	cfg := NewConfig(WithToken("test-token"))
+	if cfg.UseTLS != true {
+		t.Errorf("Expected UseTLS to be true by default, got %v", cfg.UseTLS)
+	}
+
+	// Test explicitly enabling TLS
+	cfg = NewConfig(WithToken("test-token"), WithUseTLS(true))
+	if cfg.UseTLS != true {
+		t.Errorf("Expected UseTLS to be true, got %v", cfg.UseTLS)
+	}
+
+	// Test disabling TLS
+	cfg = NewConfig(WithToken("test-token"), WithUseTLS(false))
+	if cfg.UseTLS != false {
+		t.Errorf("Expected UseTLS to be false, got %v", cfg.UseTLS)
 	}
 }
 

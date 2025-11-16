@@ -16,6 +16,8 @@ type Config struct {
 	LogLevel string
 	// Token is the authentication token (required)
 	Token string
+	// UseTLS enables TLS for the connection (default: true)
+	UseTLS bool
 	// MaxMessageSize is the maximum message size in bytes for both send and receive (default: 50MB)
 	MaxMessageSize int
 	// InitialWindowSize is the initial window size for flow control (default: 128MB)
@@ -40,6 +42,7 @@ func DefaultConfig() *Config {
 		Port:                  5123,
 		LogLevel:              "info",
 		Token:                 "",
+		UseTLS:                true,
 		MaxMessageSize:        defaultMaxMessageSize,
 		InitialWindowSize:     128 * 1024 * 1024, // 128MB
 		InitialConnWindowSize: 128 * 1024 * 1024, // 128MB
@@ -118,6 +121,13 @@ func WithLogLevel(level string) ConfigOption {
 func WithToken(token string) ConfigOption {
 	return func(c *Config) {
 		c.Token = token
+	}
+}
+
+// WithUseTLS sets whether to use TLS for the connection
+func WithUseTLS(useTLS bool) ConfigOption {
+	return func(c *Config) {
+		c.UseTLS = useTLS
 	}
 }
 
