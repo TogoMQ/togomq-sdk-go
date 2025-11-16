@@ -59,6 +59,7 @@ defer client.Close()
 | `Port` | `5123` | TogoMQ server port |
 | `LogLevel` | `info` | Logging level (debug, info, warn, error, none) |
 | `Token` | *(required)* | Authentication token |
+| `UseTLS` | `true` | Enable TLS for secure connection |
 | `MaxMessageSize` | `52428800` (50MB) | Maximum message size in bytes for send/receive |
 | `InitialWindowSize` | `52428800` (50MB) | Initial window size for flow control |
 | `InitialConnWindowSize` | `52428800` (50MB) | Initial connection window size |
@@ -73,6 +74,7 @@ config := togomq.NewConfig(
     togomq.WithPort(9000),
     togomq.WithLogLevel("debug"),
     togomq.WithToken("your-token-here"),
+    togomq.WithUseTLS(false), // Disable TLS for local development
     // Optional: Configure for large messages and high performance
     togomq.WithMaxMessageSize(52428800),      // 50MB (default)
     togomq.WithWriteBufferSize(512*1024),     // 512KB write buffer

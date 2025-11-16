@@ -7,6 +7,7 @@ import (
 	mqv1 "github.com/TogoMQ/togomq-grpc-go/mq/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
 )
@@ -32,13 +33,19 @@ func NewClient(config *Config) (*Client, error) {
 	logger := NewLogger(ParseLogLevel(config.LogLevel))
 	logger.Info("Creating TogoMQ client for %s", config.Address())
 
-	// Create TLS credentials
-	creds := credentials.NewTLS(nil)
+	// Configure transport credentials based on UseTLS setting
+	var dialOpts []grpc.DialOption
+	if config.UseTLS {
+		creds := credentials.NewTLS(nil)
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(creds))
+		logger.Debug("Using TLS for connection")
+	} else {
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		logger.Debug("Using insecure connection (TLS disabled)")
+	}
 
-	// Create gRPC connection with performance and large message support settings
-	conn, err := grpc.NewClient(
-		config.Address(),
-		grpc.WithTransportCredentials(creds),
+	// Add additional dial options
+	dialOpts = append(dialOpts,
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(config.MaxMessageSize),
 			grpc.MaxCallSendMsgSize(config.MaxMessageSize),
@@ -52,6 +59,12 @@ func NewClient(config *Config) (*Client, error) {
 			Timeout:             config.KeepaliveTimeout,
 			PermitWithoutStream: false,
 		}),
+	)
+
+	// Create gRPC connection with configured options
+	conn, err := grpc.NewClient(
+		config.Address(),
+		dialOpts...,
 	)
 	if err != nil {
 		logger.Error("Failed to connect to TogoMQ: %v", err)
